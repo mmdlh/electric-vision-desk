@@ -1,21 +1,39 @@
-import { useEffect, useRef } from "react";
+import { Component, createRef } from "react";
 import * as echarts from "echarts";
-import type { EChartsOption } from "echarts";
+import type { ECharts, EChartsOption } from "echarts";
 
-export function EnergyChart({ option, className = "h-64" }: { option: EChartsOption; className?: string }) {
-  const ref = useRef<HTMLDivElement>(null);
+type EnergyChartProps = { option: EChartsOption; className?: string };
 
-  useEffect(() => {
-    if (!ref.current) return;
-    const chart = echarts.init(ref.current, undefined, { renderer: "canvas" });
-    chart.setOption(option, { notMerge: true });
-    const observer = new ResizeObserver(() => chart.resize());
-    observer.observe(ref.current);
-    return () => {
-      observer.disconnect();
-      chart.dispose();
-    };
-  }, [option]);
+export class EnergyChart extends Component<EnergyChartProps> {
+  private readonly containerRef = createRef<HTMLDivElement>();
+  private chart: ECharts | undefined;
+  private observer: ResizeObserver | undefined;
 
-  return <div ref={ref} className={`w-full ${className}`} role="img" aria-label="能源数据图表" />;
+  componentDidMount() {
+    const container = this.containerRef.current;
+    if (!container) return;
+
+    this.chart = echarts.init(container, undefined, { renderer: "canvas" });
+    this.chart.setOption(this.props.option, { notMerge: true });
+    this.observer = new ResizeObserver(() => this.chart?.resize());
+    this.observer.observe(container);
+  }
+
+  componentDidUpdate(previousProps: EnergyChartProps) {
+    if (previousProps.option !== this.props.option) {
+      this.chart?.setOption(this.props.option, { notMerge: true });
+    }
+  }
+
+  componentWillUnmount() {
+    this.observer?.disconnect();
+    this.chart?.dispose();
+    this.chart = undefined;
+    this.observer = undefined;
+  }
+
+  render() {
+    const { className = "h-64" } = this.props;
+    return <div ref={this.containerRef} className={`w-full ${className}`} role="img" aria-label="能源数据图表" />;
+  }
 }
