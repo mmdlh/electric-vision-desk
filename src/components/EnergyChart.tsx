@@ -9,7 +9,7 @@ export class EnergyChart extends Component<EnergyChartProps> {
   private chart: ECharts | undefined;
   private observer: ResizeObserver | undefined;
 
-  componentDidMount() {
+  override componentDidMount() {
     const container = this.containerRef.current;
     if (!container) return;
 
@@ -19,20 +19,20 @@ export class EnergyChart extends Component<EnergyChartProps> {
     this.observer.observe(container);
   }
 
-  componentDidUpdate(previousProps: EnergyChartProps) {
+  override componentDidUpdate(previousProps: EnergyChartProps) {
     if (previousProps.option !== this.props.option) {
       this.chart?.setOption(this.props.option, { notMerge: true });
     }
   }
 
-  componentWillUnmount() {
+  override componentWillUnmount() {
     this.observer?.disconnect();
     this.chart?.dispose();
     this.chart = undefined;
     this.observer = undefined;
   }
 
-  render() {
+  override render() {
     const { className = "h-64" } = this.props;
     return <div ref={this.containerRef} className={`w-full ${className}`} role="img" aria-label="能源数据图表" />;
   }
